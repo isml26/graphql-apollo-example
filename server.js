@@ -1,28 +1,28 @@
 const express = require("express")
 const path = require("path")
-const { graphqlHTTP } = require("express-graphql") //express middleware function responds to graphql queries
+const { ApolloServer }= require("apollo-server-express");
 const { makeExecutableSchema } = require("@graphql-tools/schema")
 const { loadFilesSync } = require("@graphql-tools/load-files");
 
 const typesArray =loadFilesSync(path.join(__dirname, '**/*.graphql'));
+const resolversArray = loadFilesSync(path.join(__dirname,'**/*.resolvers.js'));
 
-const schema = makeExecutableSchema({
-    typeDefs:[typesArray]
-})
+async function startApolloServer(){
+    const app = express();
+    const schema = makeExecutableSchema({
+        typeDefs: [typesArray],
+        resolvers: resolversArray
+    });
+    // contains all the middleware and logic to hangle incoming graphql requests
+    const server = new ApolloServer({
+        schema
+    });
+    await server.start();
+    server.applyMiddleware({app,path:'/graphql'})
+    
+    app.listen(3000, () => {
+        console.log("Running on 3000...");
+    });
+}
 
-const root = {
-    products: require("./products/produces.model"),
-    orders : require('./orders/orders.model')
-
-};
-
-const app = express();
-app.use("/graphql", graphqlHTTP({
-    schema: schema,
-    rootValue: root,
-    graphiql: true
-}));
-
-app.listen(3000, () => {
-    console.log("Running on 3000...");
-});
+startApolloServer();
