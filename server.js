@@ -15,12 +15,13 @@ async function startApolloServer(){
     });
     // contains all the middleware and logic to hangle incoming graphql requests
     const server = new ApolloServer({
+        
         schema
     });
     await server.start();
-    server.applyMiddleware({app,path:'/graphql'})
+           server.applyMiddleware({app,path:'/graphql'})
     
-    app.listen(3000, () => {
+           app.listen(3000, () => {
         console.log("Running on 3000...");
     });
 }
